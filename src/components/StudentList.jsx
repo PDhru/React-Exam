@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchStudents } from "../redux/student";
+import { fetchStudents, deleteStudent } from "../redux/studentSlice";
 import { Link } from "react-router-dom";
 
 const StudentList = () => {
@@ -15,7 +15,6 @@ const StudentList = () => {
     dispatch(fetchStudents());
   }, [dispatch]);
 
-
   const sortedStudents = [...students].sort((a, b) => {
     if (sortBy === "name") {
       return a.name.localeCompare(b.name);
@@ -24,7 +23,6 @@ const StudentList = () => {
     }
   });
 
-
   const filteredStudents = sortedStudents.filter((student) => {
     return (
       student.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -32,53 +30,67 @@ const StudentList = () => {
     );
   });
 
+  const handleDelete = (id) => {
+    dispatch(deleteStudent(id));
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="container mt-4 bg-secondary">
-      <h2>Student List</h2>
+    <div className="container mt-4">
+      <h2 className="text-center mb-4">Student List</h2>
 
+      {/* Search and Filter Section */}
+      <div className="row mb-4">
+        {/* Search by Name */}
+        <div className="col-md-4">
+          <div className="input-group">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="form-control"
+              placeholder="Search by student name"
+            />
+            <span className="input-group-text bg-info text-white">
+              <i className="fas fa-search"></i>
+            </span>
+          </div>
+        </div>
 
-      <div className="mb-3 bg-info">
-        <label>Search by Name:</label>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="form-control"
-          placeholder="Search by student name"
-        />
+        {/* Filter by Class */}
+        <div className="col-md-4">
+          <div className="input-group">
+            <input
+              type="text"
+              value={filterByClass}
+              onChange={(e) => setFilterByClass(e.target.value)}
+              className="form-control"
+              placeholder="Filter by class"
+            />
+            <span className="input-group-text bg-info text-white">
+              <i className="fas fa-filter"></i>
+            </span>
+          </div>
+        </div>
+
+        {/* Sort by Select */}
+        <div className="col-md-4">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="form-select"
+          >
+            <option value="name">Name</option>
+            <option value="rollNumber">Roll Number</option>
+          </select>
+        </div>
       </div>
 
-
-      <div className="mb-3">
-        <label>Filter by Class:</label>
-        <input
-          type="text"
-          value={filterByClass}
-          onChange={(e) => setFilterByClass(e.target.value)}
-          className="form-control"
-          placeholder="Enter class to filter"
-        />
-      </div>
-
-
-      <div className="mb-3">
-        <label>Sort by:</label>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="form-control"
-        >
-          <option value="name">Name</option>
-          <option value="rollNumber">Roll Number</option>
-        </select>
-      </div>
-
-
-      <table className="table table-bordered">
-        <thead>
+      {/* Student Table */}
+      <table className="table table-striped table-bordered">
+        <thead className="table-dark">
           <tr>
             <th>Name</th>
             <th>Roll Number</th>
@@ -97,9 +109,14 @@ const StudentList = () => {
                   to={`/edit/${student.id}`}
                   className="btn btn-info btn-sm me-2"
                 >
-                  Edit
+                  <i className="fas fa-edit"></i> Edit
                 </Link>
-                <button className="btn btn-warning btn-sm">Delete</button>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDelete(student.id)}
+                >
+                  <i className="fas fa-trash-alt"></i> Delete
+                </button>
               </td>
             </tr>
           ))}
